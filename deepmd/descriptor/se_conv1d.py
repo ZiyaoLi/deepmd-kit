@@ -70,6 +70,7 @@ class DescrptSeConv1d(DescrptSeA):
         except KeyError:
             raise ValueError("must provide type embedding in the input dict.")
 
+        inputs = tf.reshape(inputs, [-1, self.ndescrpt * natoms[0]])
         inputs_i = tf.reshape(inputs, [-1, self.ndescrpt])
         dout, qmat = self._filter_(tf.cast(inputs_i, self.filter_precision),
                                    atype=atype,
