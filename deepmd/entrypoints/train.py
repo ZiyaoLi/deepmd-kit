@@ -248,10 +248,11 @@ def _do_work(jdata: Dict[str, Any], run_opt: RunOptions):
     modifier = get_modifier(jdata["model"].get("modifier", None))
 
     # init data
-    train_data = get_data(jdata["training"]["training_data"], rcut, ipt_type_map, modifier)
+    sort_by_type = jdata["model"]["descriptor"]["type"] not in ["se_conv", "se_conv1d"]
+    train_data = get_data(jdata["training"]["training_data"], rcut, ipt_type_map, modifier, sort_by_type)
     train_data.print_summary("training")
     if jdata["training"].get("validation_data", None) is not None:
-        valid_data = get_data(jdata["training"]["validation_data"], rcut, ipt_type_map, modifier)
+        valid_data = get_data(jdata["training"]["validation_data"], rcut, ipt_type_map, modifier, sort_by_type)
         valid_data.print_summary("validation")
     else:
         valid_data = None
@@ -268,7 +269,7 @@ def _do_work(jdata: Dict[str, Any], run_opt: RunOptions):
     log.info(f"wall time: {(end_time - start_time):.3f} s")
 
 
-def get_data(jdata: Dict[str, Any], rcut, type_map, modifier):
+def get_data(jdata: Dict[str, Any], rcut, type_map, modifier, sort_by_type):
     systems = j_must_have(jdata, "systems")
     if isinstance(systems, str):
         systems = expand_sys_str(systems)
@@ -292,8 +293,6 @@ def get_data(jdata: Dict[str, Any], rcut, type_map, modifier):
     batch_size = j_must_have(jdata, "batch_size")
     sys_probs = jdata.get("sys_probs", None)
     auto_prob = jdata.get("auto_prob", "prob_sys_size")
-
-    sort_by_type = jdata['model']['descriptor']['type'] != 'se_conv1d'
 
     data = DeepmdDataSystem(
         systems=systems,
