@@ -132,6 +132,19 @@ def embedding_net(xx,
 
     return xx
 
+
+def conv1d_net(xx,
+               conv_windows: list = [3, 3, 3],
+               conv_neurons: list = [100, 100, 100],
+               name: str = 'conv1d'):
+    assert len(conv_windows) == len(conv_neurons), "must specify conv windows and conv neurons with the same length."
+    input_shape = xx.get_shape().as_list()  # (bs, seqlen, chnl)
+    with tf.variable_scope(name):
+        for ii in range(len(conv_windows)):
+            xx = tf.layers.conv1d(xx, conv_neurons[ii], conv_windows[ii], name='conv_%d' % (ii + 1))
+    return xx
+
+
 def variable_summaries(var: tf.Variable, name: str):
     """Attach a lot of summaries to a Tensor (for TensorBoard visualization).
 

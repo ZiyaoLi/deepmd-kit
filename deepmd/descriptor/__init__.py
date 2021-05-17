@@ -6,4 +6,5 @@ from .se_t import DescrptSeT
 from .se_a_ebd import DescrptSeAEbd
 from .se_a_ef import DescrptSeAEf
 from .se_a_ef import DescrptSeAEfLower
+from .se_conv1d import DescrptSeConv1d
 from .loc_frame import DescrptLocFrame

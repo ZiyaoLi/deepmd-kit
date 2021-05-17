@@ -178,6 +178,16 @@ def descrpt_hybrid_args():
     ]
 
 
+def descrpt_se_conv1d_args():
+    doc_conv_windows = 'window sizes of each convolutional layer.'
+    doc_conv_neurons = 'number of neurons in each convolutional layer.'
+
+    return descrpt_se_a_args() + [
+        Argument("conv_windows", list, optional=True, default=[], doc=doc_conv_windows),
+        Argument("conv_neurons", list, optional=True, default=[], doc=doc_conv_neurons)
+    ]
+
+
 def descrpt_variant_type_args():
     link_lf = make_link('loc_frame', 'model/descriptor[loc_frame]')
     link_se_e2_a = make_link('se_e2_a', 'model/descriptor[se_e2_a]')
@@ -199,6 +209,7 @@ def descrpt_variant_type_args():
         Argument("se_e2_r", dict, descrpt_se_r_args(), alias = ['se_r']),
         Argument("se_e3", dict, descrpt_se_t_args(), alias = ['se_at', 'se_a_3be', 'se_t']),
         Argument("se_a_tpe", dict, descrpt_se_a_tpe_args(), alias = ['se_a_ebd']),
+        Argument("se_conv1d", dict, descrpt_se_conv1d_args(), alias = ['se_conv']),
         Argument("hybrid", dict, descrpt_hybrid_args()),
     ], doc = doc_descrpt_type)
 

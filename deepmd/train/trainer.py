@@ -17,6 +17,7 @@ from deepmd.descriptor import DescrptSeAEf
 from deepmd.descriptor import DescrptSeR
 from deepmd.descriptor import DescrptSeAR
 from deepmd.descriptor import DescrptHybrid
+from deepmd.descriptor import DescrptSeConv1d
 from deepmd.model import EnerModel, WFCModel, DipoleModel, PolarModel, GlobalPolarModel
 from deepmd.loss import EnerStdLoss, EnerDipoleLoss, TensorLoss
 from deepmd.utils.learning_rate import LearningRateExp
@@ -68,6 +69,8 @@ def _generate_descrpt_from_param_dict(descrpt_param):
         descrpt = DescrptSeAEf(**descrpt_param)
     elif descrpt_type == 'se_ar' :
         descrpt = DescrptSeAR(descrpt_param)
+    elif descrpt_type == 'se_conv1d':
+        descrpt = DescrptSeConv1d(**descrpt_param)
     else :
         raise RuntimeError('unknow model type ' + descrpt_type)
     return descrpt

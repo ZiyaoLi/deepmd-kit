@@ -52,7 +52,14 @@ def embed_atom_type(
     atm_embed = tf.nn.embedding_lookup(type_embedding,tf.cast(atype,dtype=tf.int32)) #(nf*natom)*nchnl     
     atm_embed = tf.reshape(atm_embed,[-1,te_out_dim])
     return atm_embed
-    
+
+
+def embed_atom_type_from_atype(atype, type_embedding):
+    te_out_dim = type_embedding.get_shape().as_list()[-1]
+    atm_embed = tf.nn.embedding_lookup(type_embedding,tf.cast(atype,dtype=tf.int32))
+    atm_embed = tf.reshape(atm_embed, [-1, te_out_dim])
+    return atm_embed
+
 
 class TypeEmbedNet():
     @docstring_parameter(list_to_doc(ACTIVATION_FN_DICT.keys()), list_to_doc(PRECISION_DICT.keys()))
