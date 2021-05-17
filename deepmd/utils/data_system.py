@@ -29,7 +29,8 @@ class DeepmdDataSystem() :
                   modifier = None,
                   trn_all_set = False,
                   sys_probs = None,
-                  auto_prob_style ="prob_sys_size") :
+                  auto_prob_style ="prob_sys_size",
+                  sort_by_type: bool = True) :
         """
         Constructor
         
@@ -66,12 +67,17 @@ class DeepmdDataSystem() :
                                 the list of systems is devided into blocks. A block is specified by `stt_idx:end_idx:weight`,
                                 where `stt_idx` is the starting index of the system, `end_idx` is then ending (not including) index of the system,
                                 the probabilities of the systems in this block sums up to `weight`, and the relatively probabilities within this block is proportional
-                                to the number of batches in the system."""
+                                to the number of batches in the system.
+        sort_by_type: bool
+            Whether to sort the input atoms by their types.
+            'True' option only available when type embedding is used.
+        """
         # init data
         self.rcut = rcut
         self.system_dirs = systems
         self.nsystems = len(self.system_dirs)
         self.data_systems = []
+        self.sort_by_type = sort_by_type
         for ii in self.system_dirs :
             self.data_systems.append(
                 DeepmdData(
@@ -80,7 +86,8 @@ class DeepmdDataSystem() :
                     shuffle_test=shuffle_test, 
                     type_map = type_map, 
                     modifier = modifier, 
-                    trn_all_set = trn_all_set
+                    trn_all_set = trn_all_set,
+                    sort_by_type=sort_by_type
                 ))
         # batch size
         self.batch_size = batch_size

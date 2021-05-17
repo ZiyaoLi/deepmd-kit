@@ -23,7 +23,8 @@ class DeepmdData() :
                   shuffle_test : bool = True, 
                   type_map : List[str] = None, 
                   modifier = None,
-                  trn_all_set : bool = False) :
+                  trn_all_set : bool = False,
+                  sort_by_type: bool = True) :
         """
         Constructor
         
@@ -59,8 +60,14 @@ class DeepmdData() :
             self.atom_type = np.array(atom_type_, dtype = np.int32)
             ntypes = len(self.type_map)
             self.type_map = type_map[:ntypes]
+
         # make idx map
-        self.idx_map = self._make_idx_map(self.atom_type)
+        self.sort_by_type = sort_by_type
+        if sort_by_type:    # keep the order of input central atoms
+            self.idx_map = np.arange(self.atom_type.shape[0])
+        else:               # sort the input central atoms by type
+            self.idx_map = self._make_idx_map(self.atom_type)
+
         # train dirs
         self.test_dir = self.dirs[-1]
         if trn_all_set:

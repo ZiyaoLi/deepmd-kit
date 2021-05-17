@@ -293,6 +293,8 @@ def get_data(jdata: Dict[str, Any], rcut, type_map, modifier):
     sys_probs = jdata.get("sys_probs", None)
     auto_prob = jdata.get("auto_prob", "prob_sys_size")
 
+    sort_by_type = jdata['model']['descriptor']['type'] != 'se_conv1d'
+
     data = DeepmdDataSystem(
         systems=systems,
         batch_size=batch_size,
@@ -303,7 +305,8 @@ def get_data(jdata: Dict[str, Any], rcut, type_map, modifier):
         modifier=modifier,
         trn_all_set=True,    # sample from all sets
         sys_probs=sys_probs,
-        auto_prob_style=auto_prob
+        auto_prob_style=auto_prob,
+        sort_by_type=sort_by_type
     )
     data.add_dict(data_requirement)
 
