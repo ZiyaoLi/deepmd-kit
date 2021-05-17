@@ -141,7 +141,7 @@ def conv1d_net(xx,
     input_shape = xx.get_shape().as_list()  # (bs, seqlen, chnl)
     with tf.variable_scope(name):
         for ii in range(len(conv_windows)):
-            xx = tf.layers.conv1d(xx, conv_neurons[ii], conv_windows[ii], name='conv_%d' % (ii + 1))
+            xx = tf.layers.conv1d(xx, conv_neurons[ii], conv_windows[ii], name='conv_%d' % (ii + 1), padding='same')
     return xx
 
 
