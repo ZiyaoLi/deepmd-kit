@@ -38,7 +38,7 @@ class DescrptSeConv1d(DescrptSeA):
         kwargs
             all other parameters for DescrptSeA
         """
-        super(DescrptSeConv1d, self).__init__(kwargs)
+        super(DescrptSeConv1d, self).__init__(**kwargs)
         self.conv_windows = conv_windows
         self.conv_neurons = conv_neurons
 
