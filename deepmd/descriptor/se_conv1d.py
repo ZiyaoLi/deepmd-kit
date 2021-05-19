@@ -46,7 +46,7 @@ class DescrptSeConv1d(DescrptSeA):
         """
         Returns the output dimension of this descriptor
         """
-        return self.conv_neurons[-1]
+        return self.conv_neurons[-1] if len(self.conv_neurons) > 0 else self.get_dim_before_conv()
 
     def get_dim_before_conv(self) -> int:
         """
