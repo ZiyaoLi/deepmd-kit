@@ -137,11 +137,13 @@ def conv1d_net(xx,
                conv_windows: list = [3, 3, 3],
                conv_neurons: list = [100, 100, 100],
                residual: bool = True,
+               activation_fn = tf.nn.tanh,
                name: str = 'conv1d'):
     assert len(conv_windows) == len(conv_neurons), "must specify conv windows and conv neurons with the same length."
     with tf.variable_scope(name):
         for ii in range(len(conv_windows)):
             hh = tf.layers.conv1d(xx, conv_neurons[ii], conv_windows[ii], name='conv_%d' % (ii + 1), padding='same')
+            hh = activation_fn(hh)
             if residual:
                 xx = xx + hh
             else:
