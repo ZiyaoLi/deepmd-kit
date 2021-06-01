@@ -248,6 +248,7 @@ def _do_work(jdata: Dict[str, Any], run_opt: RunOptions):
     modifier = get_modifier(jdata["model"].get("modifier", None))
 
     # init data
+    # sort_by_type = jdata["model"]["descriptor"] not in ["se_conv1d", "se_conv"]
     sort_by_type = "conv_windows" not in jdata["model"]["descriptor"].keys()
     train_data = get_data(jdata["training"]["training_data"], rcut, ipt_type_map, modifier, sort_by_type=sort_by_type)
     train_data.print_summary("training")
