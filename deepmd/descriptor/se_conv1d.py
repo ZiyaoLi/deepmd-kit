@@ -22,6 +22,7 @@ class DescrptSeConv1d(DescrptSeA):
     def __init__(self,
                  conv_windows=(3, 3, 3),
                  conv_neurons=(96, 96, 96),
+                 conv_residual=False,
                  **kwargs
                  ) -> None:
         """
@@ -41,6 +42,7 @@ class DescrptSeConv1d(DescrptSeA):
         super(DescrptSeConv1d, self).__init__(**kwargs)
         self.conv_windows = conv_windows
         self.conv_neurons = conv_neurons
+        self.conv_residual = conv_residual
 
     def get_dim_out(self) -> int:
         """
@@ -82,7 +84,8 @@ class DescrptSeConv1d(DescrptSeA):
                                    activation_fn=self.filter_activation_fn,
                                    type_embedding=type_embedding)
         dout = tf.reshape(dout, [tf.shape(inputs)[0], natoms[0], self.get_dim_before_conv()])
-        dout = conv1d_net(dout, self.conv_windows, self.conv_neurons, name='conv1d_descrpt')
+        dout = conv1d_net(dout, self.conv_windows, self.conv_neurons,
+                          name='conv1d_descrpt', residual=self.conv_residual)
         dout = tf.reshape(dout, [tf.shape(inputs)[0], natoms[0] * self.get_dim_out()])
         qmat = tf.reshape(qmat, [tf.shape(inputs)[0], natoms[0] * self.get_dim_rot_mat_1() * 3])
 

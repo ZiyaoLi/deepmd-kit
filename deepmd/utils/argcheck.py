@@ -181,10 +181,12 @@ def descrpt_hybrid_args():
 def descrpt_se_conv1d_args():
     doc_conv_windows = 'window sizes of each convolutional layer.'
     doc_conv_neurons = 'number of neurons in each convolutional layer.'
+    doc_conv_residual = 'whether use residual convolution.'
 
     return descrpt_se_a_args() + [
         Argument("conv_windows", list, optional=True, default=[], doc=doc_conv_windows),
-        Argument("conv_neurons", list, optional=True, default=[], doc=doc_conv_neurons)
+        Argument("conv_neurons", list, optional=True, default=[], doc=doc_conv_neurons),
+        Argument("conv_residual", bool, optional=True, default=False, doc=doc_conv_residual)
     ]
 
 
