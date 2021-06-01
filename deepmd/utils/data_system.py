@@ -432,6 +432,8 @@ class DeepmdDataSystem() :
         sys_width = 42
         log.info(f"---Summary of DataSystem: {name:13s}-----------------------------------------------")
         log.info("found %d system(s):" % self.nsystems)
+        log.info("centric atoms sorted by atom type." if self.sort_by_type else
+                 "centric atoms unsorted.")
         log.info(("%s  " % self._format_name_length('system', sys_width)) + 
                  ("%6s  %6s  %6s  %5s  %3s" % ('natoms', 'bch_sz', 'n_bch', 'prob', 'pbc')))
         for ii in range(self.nsystems) :
