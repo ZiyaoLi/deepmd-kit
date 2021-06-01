@@ -42,6 +42,8 @@ class DeepmdData() :
                 Data modifier that has the method `modify_data`
         trn_all_set
                 Use all sets as training dataset. Otherwise, if the number of sets is more than 1, the last set is left for test.
+        sort_by_type
+                Bool, if True, sort the centric atoms by atom types; if False, keep the input orders of the centric atoms.
         """
         self.dirs = glob.glob (os.path.join(sys_path, set_prefix + ".*"))
         self.dirs.sort()
@@ -65,7 +67,7 @@ class DeepmdData() :
         self.sort_by_type = sort_by_type
         if not sort_by_type:    # keep the order of input central atoms
             self.idx_map = np.arange(self.atom_type.shape[0])
-        else:               # sort the input central atoms by type
+        else:                   # sort the input central atoms by type
             self.idx_map = self._make_idx_map(self.atom_type)
 
         # train dirs
