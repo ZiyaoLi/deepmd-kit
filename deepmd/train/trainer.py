@@ -170,7 +170,8 @@ class DPTrainer (object):
         elif fitting_type == 'dipole':
             self.model = DipoleModel(
                 self.descrpt, 
-                self.fitting, 
+                self.fitting,
+                self.typeebd,
                 model_param.get('type_map'),
                 model_param.get('data_stat_nbatch', 10),
                 model_param.get('data_stat_protect', 1e-2)
@@ -179,6 +180,7 @@ class DPTrainer (object):
             self.model = PolarModel(
                 self.descrpt, 
                 self.fitting,
+                self.typeebd,
                 model_param.get('type_map'),
                 model_param.get('data_stat_nbatch', 10),
                 model_param.get('data_stat_protect', 1e-2)
@@ -187,6 +189,7 @@ class DPTrainer (object):
             self.model = GlobalPolarModel(
                 self.descrpt, 
                 self.fitting,
+                self.typeebd,
                 model_param.get('type_map'),
                 model_param.get('data_stat_nbatch', 10),
                 model_param.get('data_stat_protect', 1e-2)
