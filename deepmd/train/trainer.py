@@ -118,7 +118,7 @@ class DPTrainer (object):
         # elif fitting_type == 'wfc':            
         #     self.fitting = WFCFitting(fitting_param, self.descrpt)
         elif fitting_type == 'dipole':
-            if descrpt_type == 'se_e2_a':
+            if descrpt_type in ['se_e2_a', 'se_conv1d']:
                 self.fitting = DipoleFittingSeA(**fitting_param)
             else :
                 raise RuntimeError('fitting dipole only supports descrptors: se_e2_a')
