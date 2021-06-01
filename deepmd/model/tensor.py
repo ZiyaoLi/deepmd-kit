@@ -151,44 +151,48 @@ class WFCModel(TensorModel):
     def __init__(
             self, 
             descrpt, 
-            fitting, 
+            fitting,
+            typeebd = None,
             type_map : List[str] = None, 
             data_stat_nbatch : int = 10, 
             data_stat_protect : float = 1e-2
     ) -> None:
-        TensorModel.__init__(self, 'wfc', descrpt, fitting, type_map, data_stat_nbatch, data_stat_protect)
+        TensorModel.__init__(self, 'wfc', descrpt, fitting, typeebd, type_map, data_stat_nbatch, data_stat_protect)
 
 class DipoleModel(TensorModel):
     def __init__(
             self, 
             descrpt, 
-            fitting, 
+            fitting,
+            typeebd = None,
             type_map : List[str] = None, 
             data_stat_nbatch : int = 10, 
             data_stat_protect : float = 1e-2
     ) -> None:
-        TensorModel.__init__(self, 'dipole', descrpt, fitting, type_map, data_stat_nbatch, data_stat_protect)
+        TensorModel.__init__(self, 'dipole', descrpt, fitting, typeebd, type_map, data_stat_nbatch, data_stat_protect)
 
 class PolarModel(TensorModel):
     def __init__(
             self, 
             descrpt, 
-            fitting, 
+            fitting,
+            typeebd = None,
             type_map : List[str] = None, 
             data_stat_nbatch : int = 10, 
             data_stat_protect : float = 1e-2
     ) -> None:
-        TensorModel.__init__(self, 'polar', descrpt, fitting, type_map, data_stat_nbatch, data_stat_protect)
+        TensorModel.__init__(self, 'polar', descrpt, fitting, typeebd, type_map, data_stat_nbatch, data_stat_protect)
 
 class GlobalPolarModel(TensorModel):
     def __init__(
-            self, 
+            self,
             descrpt, 
-            fitting, 
+            fitting,
+            typeebd = None,
             type_map : List[str] = None, 
             data_stat_nbatch : int = 10, 
             data_stat_protect : float = 1e-2
     ) -> None:
-        TensorModel.__init__(self, 'global_polar', descrpt, fitting, type_map, data_stat_nbatch, data_stat_protect)
+        TensorModel.__init__(self, 'global_polar', descrpt, fitting, typeebd, type_map, data_stat_nbatch, data_stat_protect)
 
 
