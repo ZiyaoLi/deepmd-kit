@@ -12,7 +12,8 @@ class TensorModel() :
             self, 
             tensor_name : str,
             descrpt, 
-            fitting, 
+            fitting,
+            typeebd = None,
             type_map : List[str] = None,
             data_stat_nbatch : int = 10,
             data_stat_protect : float = 1e-2,
@@ -43,6 +44,8 @@ class TensorModel() :
         self.ntypes = self.descrpt.get_ntypes()
         # fitting
         self.fitting = fitting
+        # type embedding
+        self.typeebd = typeebd
         # other params
         if type_map is None:
             self.type_map = []
@@ -111,6 +114,15 @@ class TensorModel() :
             t_od = tf.constant(self.get_out_size(), 
                                name = 'output_dim', 
                                dtype = tf.int32)
+
+        # type embedding if any
+        if self.typeebd is not None:
+            type_embedding = self.typeebd.build(
+                self.ntypes,
+                reuse = reuse,
+                suffix = suffix,
+            )
+            input_dict['type_embedding'] = type_embedding
 
         dout \
             = self.descrpt.build(coord_,
