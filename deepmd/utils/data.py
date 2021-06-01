@@ -63,7 +63,7 @@ class DeepmdData() :
 
         # make idx map
         self.sort_by_type = sort_by_type
-        if sort_by_type:    # keep the order of input central atoms
+        if not sort_by_type:    # keep the order of input central atoms
             self.idx_map = np.arange(self.atom_type.shape[0])
         else:               # sort the input central atoms by type
             self.idx_map = self._make_idx_map(self.atom_type)
