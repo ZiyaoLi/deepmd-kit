@@ -140,7 +140,12 @@ def conv1d_net(xx,
                activation_fn = tf.nn.tanh,
                name: str = 'conv1d'):
     assert len(conv_windows) == len(conv_neurons), "must specify conv windows and conv neurons with the same length."
+    if residual:
+        if len(set(conv_neurons)) > 1:  # if all elements are not the same (empty case is ok)
+            raise ValueError("must specify the same number of neurons in each layer when residual convolution is used.")
     with tf.variable_scope(name):
+        if residual:  # transform inputs into target dim first
+            xx = tf.layers.dense(xx, conv_neurons[0], activation_fn, use_bias=True)
         for ii in range(len(conv_windows)):
             hh = tf.layers.conv1d(xx, conv_neurons[ii], conv_windows[ii], name='conv_%d' % (ii + 1), padding='same')
             hh = activation_fn(hh)
