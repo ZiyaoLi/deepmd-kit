@@ -518,8 +518,11 @@ class DPTrainer (object):
                 is_first_step = False
                 
                 # debug info by ziyao, please remove
-                atom_type = self.sess.run(self.place_holders['type'], feed_dict=self.get_feed_dict(valid_batches[0], False))
-                log.info("type of top 10 atoms: %s" % str(atom_type))
+                debug_feed_dict = self.get_feed_dict(valid_batches[0], False)
+                atom_type = self.sess.run(self.place_holders['type'], feed_dict=debug_feed_dict)
+                log.info("types of top 20 atoms in the placeholder: %s" % str(atom_type[:20]))
+                log.info("get_dim_before_conv = %d" % self.descrpt.get_dim_before_conv())
+                log.info("get_dim_before_conv = %d" % self.descrpt.get_dim_out())
 
             if self.timing_in_training: tic = time.time()
             train_feed_dict = self.get_feed_dict(train_batch, is_training=True)
