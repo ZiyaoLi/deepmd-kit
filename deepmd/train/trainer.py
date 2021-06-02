@@ -516,6 +516,10 @@ class DPTrainer (object):
                 valid_batches = [valid_data.get_batch() for ii in range(self.valid_numb_batch)] if valid_data is not None else None
                 self.valid_on_the_fly(fp, [train_batch], valid_batches, print_header=True)
                 is_first_step = False
+                
+                # debug info by ziyao, please remove
+                atom_type = self.sess.run(self.place_holders['type'])
+                log.info("type of top 10 atoms: %s" % str(atom_type))
 
             if self.timing_in_training: tic = time.time()
             train_feed_dict = self.get_feed_dict(train_batch, is_training=True)
