@@ -518,7 +518,7 @@ class DPTrainer (object):
                 is_first_step = False
                 
                 # debug info by ziyao, please remove
-                atom_type = self.sess.run(self.place_holders['type'])
+                atom_type = self.sess.run(self.place_holders['type'], feed_dict=self.get_feed_dict(valid_batches[0], False))
                 log.info("type of top 10 atoms: %s" % str(atom_type))
 
             if self.timing_in_training: tic = time.time()
