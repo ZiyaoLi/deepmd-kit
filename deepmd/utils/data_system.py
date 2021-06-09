@@ -338,7 +338,7 @@ class DeepmdDataSystem() :
             # prob = self._get_sys_probs(sys_probs, auto_prob_style)
             self.pick_idx = np.random.choice(np.arange(self.nsystems), p=self.sys_probs)
             # debug info by ziyao
-            log.info("choose system id %d, %s" % (self.pick_idx, self.system_dirs[self.pick_idx]))
+            # log.info("choose system id %d, %s" % (self.pick_idx, self.system_dirs[self.pick_idx]))
         b_data = self.data_systems[self.pick_idx].get_batch(self.batch_size[self.pick_idx])
         b_data["natoms_vec"] = self.natoms_vec[self.pick_idx]
         b_data["default_mesh"] = self.default_mesh[self.pick_idx]
