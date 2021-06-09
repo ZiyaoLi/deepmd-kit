@@ -53,7 +53,8 @@ class DescrptSeConv1d(DescrptSeA):
         """
         Returns the output dimension of this descriptor
         """
-        return self.conv_neurons[-1] if len(self.conv_neurons) > 0 else self.get_dim_before_conv()
+        return self.conv_neurons[-1] + self.get_dim_before_conv() if len(self.conv_neurons) > 0 \
+            else self.get_dim_before_conv()
 
     def get_dim_before_conv(self) -> int:
         """
@@ -89,10 +90,12 @@ class DescrptSeConv1d(DescrptSeA):
                                    activation_fn=self.filter_activation_fn,
                                    type_embedding=type_embedding)
         dout = tf.reshape(dout, [tf.shape(inputs)[0], natoms[0], self.get_dim_before_conv()])
-        dout = conv1d_net(dout, self.conv_windows, self.conv_neurons,
-                          name='conv1d_descrpt',
-                          activation_fn=self.conv_activation_fn,
-                          residual=self.conv_residual)
+        if len(self.conv_windows) > 0:
+            conv_out = conv1d_net(dout, self.conv_windows, self.conv_neurons,
+                                  name='conv1d_descrpt',
+                                  activation_fn=self.conv_activation_fn,
+                                  residual=self.conv_residual)
+            dout = tf.concat([dout, conv_out], -1, name='full_descrpt')
         dout = tf.reshape(dout, [tf.shape(inputs)[0], natoms[0] * self.get_dim_out()])
         qmat = tf.reshape(qmat, [tf.shape(inputs)[0], natoms[0] * self.get_dim_rot_mat_1() * 3])
 
