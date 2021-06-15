@@ -126,7 +126,7 @@ class DescrptSeConvGeo(DescrptSeConv1d):
                                             reuse=reuse,
                                             trainable=self.trainable)
 
-        dout = tf.reshape(self.dout, [tf.shape(self.dout)[0], natoms[0], self.get_dim_conv1d()])
+        dout = tf.reshape(dout, [tf.shape(dout)[0], natoms[0], self.get_dim_conv1d()])
         geom_feats = self.build_local_geometries(tf.reshape(coord, [tf.shape(coord)[0], natoms[0], 3]))
         dout = tf.concat([dout, geom_feats], -1, name='full_descrpt_with_geom')
         if len(self.conv_geo_windows) > 0:
