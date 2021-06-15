@@ -191,6 +191,18 @@ def descrpt_se_conv1d_args():
         Argument("conv_activation_fn", str, optional=True, default='tanh', doc=doc_conv_activation_fn)
     ]
 
+def descrpt_se_conv_geo_args():
+    doc_conv_geo_windows = 'window sizes of each convolutional layer for geometric features.'
+    doc_conv_geo_neurons = 'number of neurons in each convolutional layer for geometric features.'
+    doc_conv_geo_residual = 'whether use residual convolution for geometric features.'
+    doc_conv_geo_activation_fn = 'the activation function of convolutional layers for geometric features.'
+
+    return descrpt_se_conv1d_args() + [
+        Argument("conv_geo_windows", list, optional=True, default=[], doc=doc_conv_geo_windows),
+        Argument("conv_geo_neurons", list, optional=True, default=[], doc=doc_conv_geo_neurons),
+        Argument("conv_geo_residual", bool, optional=True, default=False, doc=doc_conv_geo_residual),
+        Argument("conv_geo_activation_fn", str, optional=True, default='tanh', doc=doc_conv_geo_activation_fn)
+    ]
 
 def descrpt_variant_type_args():
     link_lf = make_link('loc_frame', 'model/descriptor[loc_frame]')
@@ -214,6 +226,7 @@ def descrpt_variant_type_args():
         Argument("se_e3", dict, descrpt_se_t_args(), alias = ['se_at', 'se_a_3be', 'se_t']),
         Argument("se_a_tpe", dict, descrpt_se_a_tpe_args(), alias = ['se_a_ebd']),
         Argument("se_conv1d", dict, descrpt_se_conv1d_args(), alias = ['se_conv']),
+        Argument("se_conv_geo", dict, descrpt_se_conv_geo_args(), alias=['se_seq_geo']),
         Argument("hybrid", dict, descrpt_hybrid_args()),
     ], doc = doc_descrpt_type)
 
