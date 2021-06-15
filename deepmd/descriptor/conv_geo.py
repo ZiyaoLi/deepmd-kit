@@ -94,8 +94,8 @@ class DescrptSeConvGeo(DescrptSeConv1d):
 
     def build_local_geometries(self, coord: tf.Tensor):
 
-        assert len(tf.shape(coord)) == 3, "wrong shape of coordinates to calculate local geometry."
-        nframes, natoms, _ = tf.shape(coord)
+        # assert len(tf.shape(coord)) == 3, "wrong shape of coordinates to calculate local geometry."
+        # nframes, natoms, _ = tf.shape(coord)
 
         def inner_product(x, y, axis=-1):
             return tf.reduce_sum(x * y, axis=axis)
@@ -134,19 +134,21 @@ class DescrptSeConvGeo(DescrptSeConv1d):
             sin_psi = tf.sqrt(1 - cos_psi * cos_psi)
 
         # calc geom feats
-        geom_feats = DescrptSeConvGeo.pad_and_stack_geom_feats(dist, cos_phi, sin_phi, cos_psi, sin_psi)
+        geom_feats = self.pad_and_stack_geom_feats(dist, cos_phi, sin_phi, cos_psi, sin_psi)
 
         return geom_feats
 
-    @staticmethod
-    def pad_and_stack_geom_feats(dist_, cos_phi_, sin_phi_, cos_psi_, sin_psi_):
+    def pad_and_stack_geom_feats(self, dist_, cos_phi_, sin_phi_, cos_psi_, sin_psi_):
         # create padding variables
         with tf.variable_scope("local_geometry_padding"):
             nframe = tf.shape(dist_)[0]
-            pad_dist = tf.broadcast_to(tf.Variable(1., name="pad_distance"), (nframe, 1))
-            pad_cos_phi = tf.broadcast_to(tf.Variable([-.5, -.5], name="pad_cos_phi"), (nframe, 2))
+            pad_dist    = tf.broadcast_to(tf.Variable(1., name="pad_distance", dtype=self.filter_precision),
+                                          (nframe, 1))
+            pad_cos_phi = tf.broadcast_to(tf.Variable([-.5, -.5], name="pad_cos_phi", dtype=self.filter_precision),
+                                          (nframe, 2))
             pad_sin_phi = tf.sqrt(1 - pad_cos_phi * pad_cos_phi, name="pad_sin_phi")
-            pad_cos_psi = tf.broadcast_to(tf.Variable([-.5, -.5, -.5], name="pad_cos_psi"), (nframe, 3))
+            pad_cos_psi = tf.broadcast_to(tf.Variable([-.5, -.5, -.5], name="pad_cos_psi", dtype=self.filter_precision),
+                                          (nframe, 3))
             pad_sin_psi = tf.sqrt(1 - pad_cos_psi * pad_cos_psi, name="pad_sin_psi")
 
             # padding the results.
