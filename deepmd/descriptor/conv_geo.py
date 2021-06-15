@@ -37,9 +37,6 @@ class DescrptSeConvGeo(DescrptSeConv1d):
             raise ValueError("unknown activation function type: %s" % conv_geo_activation_fn)
         super(DescrptSeConvGeo, self).__init__(**kwargs)
 
-    def get_dim_conv1d(self):
-        return super(DescrptSeConvGeo, self).get_dim_out()
-
     def get_dim_out(self) -> int:
         """
         Returns the output dimension of this descriptor
@@ -126,7 +123,7 @@ class DescrptSeConvGeo(DescrptSeConv1d):
                                             reuse=reuse,
                                             trainable=self.trainable)
 
-        dout = tf.reshape(dout, [tf.shape(dout)[0], natoms[0], self.get_dim_conv1d()])
+        dout = tf.reshape(dout, [tf.shape(dout)[0], natoms[0], self.get_dim_after_conv()])
         geom_feats = self.build_local_geometries(tf.reshape(coord, [tf.shape(coord)[0], natoms[0], 3]))
         dout = tf.concat([dout, geom_feats], -1, name='full_descrpt_with_geom')
         if len(self.conv_geo_windows) > 0:

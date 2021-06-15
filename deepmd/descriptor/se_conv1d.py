@@ -56,6 +56,9 @@ class DescrptSeConv1d(DescrptSeA):
         return self.conv_neurons[-1] + self.get_dim_before_conv() if len(self.conv_neurons) > 0 \
             else self.get_dim_before_conv()
 
+    def get_dim_after_conv(self) -> int:
+        return self.get_dim_out()
+
     def get_dim_before_conv(self) -> int:
         """
         Returns the output dimension of this descriptor before convolution
@@ -96,7 +99,7 @@ class DescrptSeConv1d(DescrptSeA):
                                   activation_fn=self.conv_activation_fn,
                                   residual=self.conv_residual)
             dout = tf.concat([dout, conv_out], -1, name='full_descrpt')
-        dout = tf.reshape(dout, [tf.shape(inputs)[0], natoms[0] * self.get_dim_out()])
+        dout = tf.reshape(dout, [tf.shape(inputs)[0], natoms[0] * self.get_dim_after_conv()])
         qmat = tf.reshape(qmat, [tf.shape(inputs)[0], natoms[0] * self.get_dim_rot_mat_1() * 3])
 
         return dout, qmat
