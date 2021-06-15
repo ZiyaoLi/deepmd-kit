@@ -49,22 +49,22 @@ class DescrptSeConv1d(DescrptSeA):
         except KeyError:
             raise ValueError("unknown activation function type: %s" % conv_activation_fn)
 
-    def get_dim_out(self) -> int:
-        """
-        Returns the output dimension of this descriptor
-        """
-        return self.conv_neurons[-1] + self.get_dim_before_conv() if len(self.conv_neurons) > 0 \
-            else self.get_dim_before_conv()
-
-    def get_dim_after_conv(self) -> int:
-        return self.get_dim_out()
-
     def get_dim_before_conv(self) -> int:
         """
         Returns the output dimension of this descriptor before convolution
         The same as DescrptSeA.get_dim_out()
         """
         return self.filter_neuron[-1] * self.n_axis_neuron
+
+    def get_dim_after_conv(self) -> int:
+        return self.conv_neurons[-1] + self.get_dim_before_conv() if len(self.conv_neurons) > 0 \
+            else self.get_dim_before_conv()
+
+    def get_dim_out(self) -> int:
+        """
+        Returns the output dimension of this descriptor
+        """
+        return self.get_dim_after_conv()
 
     def _pass_filter(self,
                      inputs,
