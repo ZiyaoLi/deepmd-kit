@@ -41,8 +41,9 @@ class DescrptSeConvGeo(DescrptSeConv1d):
         """
         Returns the output dimension of this descriptor
         """
-        return self.get_dim_conv1d() + DescrptSeConvGeo.DIM_GEOM_FEATS + \
-            self.conv_geo_neurons[-1] if len(self.conv_geo_neurons) > 0 else 0
+        return super(DescrptSeConvGeo, self).get_dim_after_conv() + \
+               DescrptSeConvGeo.DIM_GEOM_FEATS + \
+               self.conv_geo_neurons[-1] if len(self.conv_geo_neurons) > 0 else 0
 
     def build(self,
               coord_: tf.Tensor,
