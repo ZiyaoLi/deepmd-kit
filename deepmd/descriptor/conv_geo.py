@@ -37,49 +37,97 @@ class DescrptSeConvGeo(DescrptSeConv1d):
             raise ValueError("unknown activation function type: %s" % conv_geo_activation_fn)
         super(DescrptSeConvGeo, self).__init__(**kwargs)
 
+    def get_dim_conv1d(self):
+        return super(DescrptSeConvGeo, self).get_dim_out()
+
     def get_dim_out(self) -> int:
         """
         Returns the output dimension of this descriptor
         """
-        return super(DescrptSeConvGeo, self).get_dim_out() + DescrptSeConvGeo.DIM_GEOM_FEATS + \
+        return self.get_dim_conv1d() + DescrptSeConvGeo.DIM_GEOM_FEATS + \
             self.conv_geo_neurons[-1] if len(self.conv_geo_neurons) > 0 else 0
 
-    def _pass_filter(self,
-                     inputs,
-                     atype,
-                     natoms,
-                     input_dict,
-                     reuse=None,
-                     suffix='',
-                     trainable=True):
-        try:
-            type_embedding = input_dict['type_embedding']
-        except TypeError:
-            raise ValueError("must provide the input dict with type embedding in it.")
-        except KeyError:
-            raise ValueError("must provide type embedding in the input dict.")
+    def build(self,
+              coord_: tf.Tensor,
+              atype_: tf.Tensor,
+              natoms: tf.Tensor,
+              box_: tf.Tensor,
+              mesh: tf.Tensor,
+              input_dict: dict,
+              reuse: bool = None,
+              suffix: str = ''
+              ) -> tf.Tensor:
+        """
+        see DescrptSeA.build for explanations.
+        """
+        davg = self.davg
+        dstd = self.dstd
+        with tf.variable_scope('descrpt_attr' + suffix, reuse=reuse):
+            if davg is None:
+                davg = np.zeros([self.ntypes, self.ndescrpt])
+            if dstd is None:
+                dstd = np.ones([self.ntypes, self.ndescrpt])
+            t_rcut = tf.constant(np.max([self.rcut_r, self.rcut_a]),
+                                 name='rcut',
+                                 dtype=GLOBAL_TF_FLOAT_PRECISION)
+            t_ntypes = tf.constant(self.ntypes,
+                                   name='ntypes',
+                                   dtype=tf.int32)
+            t_ndescrpt = tf.constant(self.ndescrpt,
+                                     name='ndescrpt',
+                                     dtype=tf.int32)
+            t_sel = tf.constant(self.sel_a,
+                                name='sel',
+                                dtype=tf.int32)
+            self.t_avg = tf.get_variable('t_avg',
+                                         davg.shape,
+                                         dtype=GLOBAL_TF_FLOAT_PRECISION,
+                                         trainable=False,
+                                         initializer=tf.constant_initializer(davg))
+            self.t_std = tf.get_variable('t_std',
+                                         dstd.shape,
+                                         dtype=GLOBAL_TF_FLOAT_PRECISION,
+                                         trainable=False,
+                                         initializer=tf.constant_initializer(dstd))
 
-        inputs = tf.reshape(inputs, [-1, self.ndescrpt * natoms[0]])
-        inputs_i = tf.reshape(inputs, [-1, self.ndescrpt])
-        dout, qmat = self._filter_(tf.cast(inputs_i, self.filter_precision),
-                                   atype=atype,
-                                   name='filter_type_all' + suffix,
-                                   natoms=natoms,
-                                   reuse=reuse,
-                                   seed=self.seed,
-                                   trainable=trainable,
-                                   activation_fn=self.filter_activation_fn,
-                                   type_embedding=type_embedding)
+        coord = tf.reshape(coord_, [-1, natoms[1] * 3])
+        box = tf.reshape(box_, [-1, 9])
+        atype = tf.reshape(atype_, [-1, natoms[1]])
 
-        dout = tf.reshape(dout, [tf.shape(inputs)[0], natoms[0], self.get_dim_before_conv()])
-        if len(self.conv_windows) > 0:
-            conv_out = conv1d_net(dout, self.conv_windows, self.conv_neurons,
-                                  name='conv1d_descrpt',
-                                  activation_fn=self.conv_activation_fn,
-                                  residual=self.conv_residual)
-            dout = tf.concat([dout, conv_out], -1, name='full_descrpt')
+        self.descrpt, self.descrpt_deriv, self.rij, self.nlist \
+            = op_module.prod_env_mat_a(coord,
+                                       atype,
+                                       natoms,
+                                       box,
+                                       mesh,
+                                       self.t_avg,
+                                       self.t_std,
+                                       rcut_a=self.rcut_a,
+                                       rcut_r=self.rcut_r,
+                                       rcut_r_smth=self.rcut_r_smth,
+                                       sel_a=self.sel_a,
+                                       sel_r=self.sel_r)
+        # only used when tensorboard was set as true
+        tf.summary.histogram('descrpt', self.descrpt)
+        tf.summary.histogram('rij', self.rij)
+        tf.summary.histogram('nlist', self.nlist)
 
-        geom_feats = self.build_local_geometries(tf.reshape(inputs, [tf.shape(inputs)[0], natoms[0], 3]))
+        self.descrpt_reshape = tf.reshape(self.descrpt, [-1, self.ndescrpt])
+        self.descrpt_reshape = tf.identity(self.descrpt_reshape, name='o_rmat')
+        self.descrpt_deriv = tf.identity(self.descrpt_deriv, name='o_rmat_deriv')
+        self.rij = tf.identity(self.rij, name='o_rij')
+        self.nlist = tf.identity(self.nlist, name='o_nlist')
+
+        dout, self.qmat = self._pass_filter(self.descrpt_reshape,
+                                            atype,
+                                            natoms,
+                                            input_dict,
+                                            suffix=suffix,
+                                            reuse=reuse,
+                                            trainable=self.trainable)
+
+        dout = tf.reshape(self.dout, [tf.shape(self.dout)[0], natoms[0], self.get_dim_conv1d()])
+        geom_feats = self.build_local_geometries(tf.reshape(coord, [tf.shape(coord)[0], natoms[0], 3]))
         dout = tf.concat([dout, geom_feats], -1, name='full_descrpt_with_geom')
         if len(self.conv_geo_windows) > 0:
             conv_geo_out = conv1d_net(geom_feats, self.conv_geo_windows, self.conv_geo_neurons,
@@ -87,15 +135,14 @@ class DescrptSeConvGeo(DescrptSeConv1d):
                                       activation_fn=self.conv_geo_activation_fn,
                                       residual=self.conv_geo_residual)
             dout = tf.concat([dout, conv_geo_out], -1, name='full_descrpt_with_conved_geom')
-        dout = tf.reshape(dout, [tf.shape(inputs)[0], natoms[0] * self.get_dim_out()])
-        qmat = tf.reshape(qmat, [tf.shape(inputs)[0], natoms[0] * self.get_dim_rot_mat_1() * 3])
 
-        return dout, qmat
+        self.dout = dout
+        # only used when tensorboard was set as true
+        tf.summary.histogram('embedding_net_output', self.dout)
+
+        return self.dout
 
     def build_local_geometries(self, coord: tf.Tensor):
-
-        # assert len(tf.shape(coord)) == 3, "wrong shape of coordinates to calculate local geometry."
-        # nframes, natoms, _ = tf.shape(coord)
 
         def inner_product(x, y, axis=-1):
             return tf.reduce_sum(x * y, axis=axis)
