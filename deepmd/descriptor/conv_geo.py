@@ -26,6 +26,7 @@ class DescrptSeConvGeo(DescrptSeConv1d):
                  conv_geo_neurons: list = [100, 100, 100],
                  conv_geo_residual: bool = True,
                  conv_geo_activation_fn: str = 'tanh',
+                 use_sin: bool = True,
                  **kwargs
                  ) -> None:
         self.conv_geo_windows = conv_geo_windows
@@ -171,39 +172,37 @@ class DescrptSeConvGeo(DescrptSeConv1d):
             # calc phi
             vec_inner_prod = inner_product(vec_to_prev, vec_to_next)
             cos_phi = tf.math.divide_no_nan(vec_inner_prod, dist[:, :-1] * dist[:, 1:])
-            sin_phi = tf.sqrt(1 - cos_phi * cos_phi)
 
             # calc psi
             nvec = get_angle_normal_vec(vec_to_prev, vec_to_next)
             cos_psi = inner_product(nvec[:, :-1, :], nvec[:, 1:, :])
-            sin_psi = tf.sqrt(1 - cos_psi * cos_psi)
 
         # calc geom feats
-        geom_feats = self.pad_and_stack_geom_feats(dist, cos_phi, sin_phi, cos_psi, sin_psi)
+        geom_feats = self.pad_and_stack_geom_feats(dist, cos_phi, cos_psi, use_sin=True)
 
         return geom_feats
 
-    def pad_and_stack_geom_feats(self, dist_, cos_phi_, sin_phi_, cos_psi_, sin_psi_):
+    def pad_and_stack_geom_feats(self, dist_, cos_phi_, cos_psi_, use_sin=True):
         # create padding variables
         with tf.variable_scope("local_geometry_padding"):
             nframe = tf.shape(dist_)[0]
-            pad_dist    = tf.broadcast_to(tf.Variable(1., name="pad_distance", dtype=self.filter_precision),
-                                          (nframe, 1))
-            pad_cos_phi = tf.broadcast_to(tf.Variable([-.5, -.5], name="pad_cos_phi", dtype=self.filter_precision),
-                                          (nframe, 2))
-            pad_sin_phi = tf.sqrt(1 - pad_cos_phi * pad_cos_phi, name="pad_sin_phi")
-            pad_cos_psi = tf.broadcast_to(tf.Variable([-.5, -.5, -.5], name="pad_cos_psi", dtype=self.filter_precision),
-                                          (nframe, 3))
-            pad_sin_psi = tf.sqrt(1 - pad_cos_psi * pad_cos_psi, name="pad_sin_psi")
+            pad_dist = tf.broadcast_to(
+                tf.cos(tf.Variable(1., name="pad_distance", dtype=self.filter_precision)), (nframe, 1))
+            pad_cos_phi = tf.broadcast_to(
+                tf.cos(tf.Variable([-.5, -.5], name="pad_cos_phi", dtype=self.filter_precision)), (nframe, 2))
+            pad_cos_psi = tf.broadcast_to(
+                tf.cos(tf.Variable([-.5, -.5, -.5], name="pad_cos_psi", dtype=self.filter_precision)), (nframe, 3))
 
             # padding the results.
             dist = tf.concat([dist_, pad_dist], -1)
-            cos_phi = tf.concat([cos_phi_, pad_cos_phi], -1)
-            sin_phi = tf.concat([sin_phi_, pad_sin_phi], -1)
-            cos_psi = tf.concat([cos_psi_, pad_cos_psi], -1)
-            sin_psi = tf.concat([sin_psi_, pad_sin_psi], -1)
+            cos_phi = tf.concat([cos_phi_, pad_cos_phi], -1, name="cos_phi")
+            sin_phi = DescrptSeConvGeo.safe_sin_from_cos(cos_phi, name="sin_phi_safe")
+            cos_psi = tf.concat([cos_psi_, pad_cos_psi], -1, name="cos_psi")
+            sin_psi = DescrptSeConvGeo.safe_sin_from_cos(sin_phi, name="sin_psi_safe")
             return tf.stack([dist, cos_phi, sin_phi, cos_psi, sin_psi], -1)
 
-
+    @staticmethod
+    def safe_sin_from_cos(x: tf.Tensor, name=''):
+        return tf.sqrt(tf.nn.relu(1 - x * x), name=name)
 
 
