@@ -36,6 +36,7 @@ class DescrptSeConvGeo(DescrptSeConv1d):
             self.conv_geo_activation_fn = ACTIVATION_FN_DICT[conv_geo_activation_fn]
         except KeyError:
             raise ValueError("unknown activation function type: %s" % conv_geo_activation_fn)
+        self.use_sin = use_sin
         super(DescrptSeConvGeo, self).__init__(**kwargs)
 
     def get_dim_out(self) -> int:
@@ -45,6 +46,10 @@ class DescrptSeConvGeo(DescrptSeConv1d):
         return super(DescrptSeConvGeo, self).get_dim_after_conv() + \
                DescrptSeConvGeo.DIM_GEOM_FEATS + \
                self.conv_geo_neurons[-1] if len(self.conv_geo_neurons) > 0 else 0
+
+    def get_dim_geom_feats(self) -> int:
+        # d, cos phi, cos psi, (sin phi, sin psi)
+        return 5 if self.use_sin else 3
 
     def build(self,
               coord_: tf.Tensor,
@@ -126,13 +131,17 @@ class DescrptSeConvGeo(DescrptSeConv1d):
                                             trainable=self.trainable)
 
         dout = tf.reshape(dout, [tf.shape(dout)[0], natoms[0], self.get_dim_after_conv()])
+
+        # new in conv geo:
         geom_feats = self.build_local_geometries(tf.reshape(coord, [tf.shape(coord)[0], natoms[0], 3]))
+        # # concat geom features
         dout = tf.concat([dout, geom_feats], -1, name='full_descrpt_with_geom')
         if len(self.conv_geo_windows) > 0:
             conv_geo_out = conv1d_net(geom_feats, self.conv_geo_windows, self.conv_geo_neurons,
                                       name='conv_geo_descrpt',
                                       activation_fn=self.conv_geo_activation_fn,
                                       residual=self.conv_geo_residual)
+            # # concat conved geom features
             dout = tf.concat([dout, conv_geo_out], -1, name='full_descrpt_with_conved_geom')
 
         self.dout = dout
@@ -185,13 +194,14 @@ class DescrptSeConvGeo(DescrptSeConv1d):
     def pad_and_stack_geom_feats(self, dist_, cos_phi_, cos_psi_, use_sin=True):
         # create padding variables
         with tf.variable_scope("local_geometry_padding"):
+            DEG_120 = 2 * np.pi / 3
             nframe = tf.shape(dist_)[0]
             pad_dist = tf.broadcast_to(
                 tf.cos(tf.Variable(1., name="pad_distance", dtype=self.filter_precision)), (nframe, 1))
             pad_cos_phi = tf.broadcast_to(
-                tf.cos(tf.Variable([-.5, -.5], name="pad_cos_phi", dtype=self.filter_precision)), (nframe, 2))
+                tf.cos(tf.Variable([DEG_120, DEG_120], name="pad_cos_phi", dtype=self.filter_precision)), (nframe, 2))
             pad_cos_psi = tf.broadcast_to(
-                tf.cos(tf.Variable([-.5, -.5, -.5], name="pad_cos_psi", dtype=self.filter_precision)), (nframe, 3))
+                tf.cos(tf.Variable([DEG_120, DEG_120, DEG_120], name="pad_cos_psi", dtype=self.filter_precision)), (nframe, 3))
 
             # padding the results.
             dist = tf.concat([dist_, pad_dist], -1)
